@@ -1,0 +1,104 @@
+{
+ "titulo": "Coste salarial por trabajador y mes",
+ "unidad": "€/mes",
+ "periodo": "2T 2026",
+ "descargado": "2026-09-27 18:55 UTC",
+ "fuente": {
+  "nombre": "INE, Encuesta Trimestral de Coste Laboral (tabla 6061)",
+  "url_api": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/6061?nult=5",
+  "url_web": "https://www.ine.es/jaxiT3/Tabla.htm?t=6061",
+  "licencia": "Reutilización libre citando la fuente (INE)"
+ },
+ "datos": {
+  "ES": {
+   "nombre": "España",
+   "valor": 2512.68,
+   "variacion": 4.0
+  },
+  "01": {
+   "nombre": "Andalucía",
+   "valor": 2227.09,
+   "variacion": 3.7
+  },
+  "02": {
+   "nombre": "Aragón",
+   "valor": 2393.2,
+   "variacion": 3.0
+  },
+  "03": {
+   "nombre": "Asturias, Principado de",
+   "valor": 2476.42,
+   "variacion": 6.0
+  },
+  "04": {
+   "nombre": "Balears, Illes",
+   "valor": 2428.22,
+   "variacion": 4.7
+  },
+  "05": {
+   "nombre": "Canarias",
+   "valor": 2016.13,
+   "variacion": 4.1
+  },
+  "06": {
+   "nombre": "Cantabria",
+   "valor": 2283.42,
+   "variacion": 8.8
+  },
+  "07": {
+   "nombre": "Castilla y León",
+   "valor": 2223.06,
+   "variacion": 3.0
+  },
+  "08": {
+   "nombre": "Castilla - La Mancha",
+   "valor": 2204.56,
+   "variacion": 3.2
+  },
+  "09": {
+   "nombre": "Cataluña",
+   "valor": 2770.19,
+   "variacion": 5.1
+  },
+  "10": {
+   "nombre": "Comunitat Valenciana",
+   "valor": 2215.43,
+   "variacion": 3.1
+  },
+  "11": {
+   "nombre": "Extremadura",
+   "valor": 2021.62,
+   "variacion": 2.4
+  },
+  "12": {
+   "nombre": "Galicia",
+   "valor": 2174.28,
+   "variacion": 2.9
+  },
+  "13": {
+   "nombre": "Madrid, Comunidad de",
+   "valor": 3060.53,
+   "variacion": 4.3
+  },
+  "14": {
+   "nombre": "Murcia, Región de",
+   "valor": 2127.37,
+   "variacion": 3.1
+  },
+  "15": {
+   "nombre": "Navarra, Comunidad Foral de",
+   "valor": 2665.38,
+   "variacion": 2.2
+  },
+  "16": {
+   "nombre": "País Vasco",
+   "valor": 2718.07,
+   "variacion": 5.0
+  },
+  "17": {
+   "nombre": "Rioja, La",
+   "valor": 2377.01,
+   "variacion": 2.4
+  }
+ }
+}

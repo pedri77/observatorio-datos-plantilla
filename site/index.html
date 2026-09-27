@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi observatorio de datos</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%23e8590c%27/%3E%3C/svg%3E">
+<meta name="description" content="Observatorio de datos públicos construido con la plantilla de IAcademy.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root { --bg: #f5f6f4; --paper: #fff; --ink: #1b1f24; --ink-2: #555f6a; --line: #d9ddd6; --accent: #e8590c;
+          --c1: #fde9d9; --c2: #f9b98a; --c3: #f08a4b; --c4: #d9480f; --c5: #8a2b06; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #121417; --paper: #1b1e22; --ink: #eceef0; --ink-2: #a5adb6; --line: #2d3238; color-scheme: dark; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.1; margin: 8px 0 8px; }
+  .lede { color: var(--ink-2); max-width: 65ch; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  #map { height: 480px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper); }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 16px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: .92rem; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+  td.r, th.r { text-align: right; }
+  th { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); cursor: pointer; }
+  .fuente { font-size: .85rem; color: var(--ink-2); margin-top: 16px; }
+  .kpi { font-size: 2.4rem; font-weight: 800; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="fuente">Plantilla de observatorio de datos · <a href="https://iacedemy.com/free/yt/construido-con-ia/">IAcademy</a></p>
+  <h1 id="titulo">Cargando…</h1>
+  <p class="lede">Ejemplo incluido en la plantilla: el dato se descarga cada día de la API del INE con GitHub Actions y se publica en GitHub Pages. Cámbialo por tu propia pregunta (ver README).</p>
+  <div class="kpi" id="kpi"></div>
+  <div class="grid">
+    <div id="map" role="region" aria-label="Mapa por comunidad autónoma"></div>
+    <div class="card"><table id="tabla"></table></div>
+  </div>
+  <p class="fuente" id="fuente"></p>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const nf = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 0, useGrouping: "always" });
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+(async () => {
+  const [D, geo] = await Promise.all([fetch("data.json").then((r) => r.json()), fetch("ccaa.geojson").then((r) => r.json())]);
+  document.getElementById("titulo").textContent = `${D.titulo} (${D.periodo})`;
+  document.getElementById("kpi").textContent = `España: ${nf.format(D.datos.ES.valor)} ${D.unidad}`;
+  document.getElementById("fuente").innerHTML = `Fuente: <a href="${esc(D.fuente.url_web)}">${esc(D.fuente.nombre)}</a> · ${esc(D.fuente.licencia)} · descargado el ${esc(D.descargado)}`;
+
+  // Escala por cuantiles en 5 clases
+  const vals = Object.entries(D.datos).filter(([k]) => k !== "ES").map(([, d]) => d.valor).sort((a, b) => a - b);
+  const cortes = [1, 2, 3, 4].map((i) => vals[Math.floor((i * vals.length) / 5)]);
+  const clase = (v) => cortes.filter((c) => v >= c).length + 1;
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  const map = L.map("map", { scrollWheelZoom: false }).fitBounds([[35.9, -9.4], [43.8, 4.4]]);
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    { attribution: "Teselas © Esri, HERE, Garmin, © OpenStreetMap", maxNativeZoom: 16 }).addTo(map);
+  L.geoJSON(geo, {
+    style: (f) => { const d = D.datos[f.properties.code]; return { fillColor: d ? css(`--c${clase(d.valor)}`) : "#ccc", fillOpacity: .85, color: "#fff", weight: 1 }; },
+    onEachFeature: (f, l) => { const d = D.datos[f.properties.code]; l.bindTooltip(`${esc(f.properties.name)}<br>${d ? nf.format(d.valor) + " " + D.unidad : "Sin dato"}`, { sticky: true }); },
+  }).addTo(map);
+
+  // Tabla ordenable
+  let clave = "valor", dir = -1;
+  const filas = Object.entries(D.datos).filter(([k]) => k !== "ES").map(([, d]) => d);
+  const pintar = () => {
+    const ord = [...filas].sort((a, b) => (typeof a[clave] === "string" ? a[clave].localeCompare(b[clave], "es") : (a[clave] ?? -1e9) - (b[clave] ?? -1e9)) * dir);
+    document.getElementById("tabla").innerHTML = `<thead><tr><th data-k="nombre">Comunidad</th><th class="r" data-k="valor">${esc(D.unidad)}</th><th class="r" data-k="variacion">Interanual</th></tr></thead><tbody>${ord.map((d) => `<tr><td>${esc(d.nombre)}</td><td class="r">${nf.format(d.valor)}</td><td class="r">${d.variacion == null ? "—" : (d.variacion > 0 ? "+" : "") + d.variacion.toLocaleString("es-ES") + "%"}</td></tr>`).join("")}</tbody>`;
+    document.querySelectorAll("th").forEach((th) => (th.onclick = () => { dir = th.dataset.k === clave ? -dir : -1; clave = th.dataset.k; pintar(); }));
+  };
+  pintar();
+})();
+</script>
+</body>
+</html>
